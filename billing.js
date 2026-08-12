@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import { db, getBusiness } from '../db/index.js';
+import { db, getBusiness } from './db.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
 

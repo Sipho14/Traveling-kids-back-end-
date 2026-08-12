@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { db, trialStatus } from '../db/index.js';
-import { sendText, extractInboundText } from '../services/whatsapp.js';
-import { runAgent } from '../ai/agent.js';
+import { db, trialStatus } from './db.js';
+import { sendText, extractInboundText } from './whatsapp.js';
+import { runAgent } from './agent.js';
 
 export const whatsappWebhook = Router();
 

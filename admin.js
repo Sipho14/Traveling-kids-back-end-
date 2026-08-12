@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { db, getBusiness, trialStatus } from '../db/index.js';
+import { db, getBusiness, trialStatus } from './db.js';
 import { requireAuth } from './auth.js';
-import { ensureDriverToken, getTripWithStops, reorderStops, reassignStop } from '../services/logistics.js';
-import { sendText } from '../services/whatsapp.js';
-import { diagnoseTrip } from '../services/diagnostics.js';
+import { ensureDriverToken, getTripWithStops, reorderStops, reassignStop } from './logistics.js';
+import { sendText } from './whatsapp.js';
+import { diagnoseTrip } from './diagnostics.js';
 
 export const adminRouter = Router();
 adminRouter.use(requireAuth);

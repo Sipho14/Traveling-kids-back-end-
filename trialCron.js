@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import { db, trialStatus } from '../db/index.js';
+import { db, trialStatus } from './db.js';
 
 export function startTrialCron() {
   // Runs once a day at 08:00 server time.

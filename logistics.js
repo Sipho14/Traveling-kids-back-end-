@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import { db } from '../db/index.js';
+import { db } from './db.js';
 import { sendText } from './whatsapp.js';
 
 // Only ping parents further down the route if a delay actually moves their ETA by

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import Stripe from 'stripe';
-import { handleStripeEvent } from '../services/billing.js';
+import { handleStripeEvent } from './billing.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
 export const stripeWebhook = Router();

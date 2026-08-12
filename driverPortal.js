@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getTripWithStops, updateStopStatus } from '../services/logistics.js';
+import { getTripWithStops, updateStopStatus } from './logistics.js';
 
 export const driverRouter = Router();
 

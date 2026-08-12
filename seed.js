@@ -1,6 +1,6 @@
 import 'dotenv/config';
-import { db } from './index.js';
-import { hashForStorage } from '../routes/auth.js';
+import { db } from './db.js';
+import { hashForStorage } from './auth.js';
 
 const OWNER_EMAIL = process.env.SEED_OWNER_EMAIL || 'owner@example.com';
 const OWNER_PASSWORD = process.env.SEED_OWNER_PASSWORD || 'changeme123';

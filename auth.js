@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { db, getBusiness } from '../db/index.js';
+import { db, getBusiness } from './db.js';
 
 export const authRouter = Router();
 

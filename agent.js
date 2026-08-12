@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { db, getBusiness } from '../db/index.js';
-import { createPaymentLink } from '../services/billing.js';
-import { addStopForBooking } from '../services/logistics.js';
+import { db, getBusiness } from './db.js';
+import { createPaymentLink } from './billing.js';
+import { addStopForBooking } from './logistics.js';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
