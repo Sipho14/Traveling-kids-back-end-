@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { @apply border-transit-line; }
+  body { @apply antialiased; }
+  ::selection { @apply bg-transit-amber/40; }
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-2xl border border-transit-line p-6 shadow-[0_1px_2px_rgba(22,35,63,0.04)];
+  }
+  .btn-primary {
+    @apply bg-transit-navy text-white rounded-xl px-4 py-2.5 text-sm font-semibold hover:bg-transit-navy2 transition-colors;
+  }
+  .btn-amber {
+    @apply bg-transit-amber text-transit-navy rounded-xl px-4 py-2.5 text-sm font-semibold hover:bg-transit-amber2 transition-colors;
+  }
+  .input {
+    @apply w-full rounded-xl border border-transit-line px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-transit-amber/60;
+  }
+  .label {
+    @apply text-xs font-semibold uppercase tracking-wide text-transit-slate mb-1 block;
+  }
+  .pill {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold;
+  }
+}

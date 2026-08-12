@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>Today's Run — Scholar Transit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --navy: #16233F; --amber: #F4B400; --amber2: #D99A00; --cream: #F7F4EC;
+    --slate: #65708A; --line: #E4E0D4; --good: #2E7D5B; --bad: #C1443D;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--cream); font-family: 'Inter', sans-serif; color: var(--navy); }
+  header { background: var(--navy); color: white; padding: 18px 20px; }
+  header .route { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 20px; }
+  header .meta { color: rgba(255,255,255,0.65); font-size: 13px; margin-top: 2px; }
+  main { padding: 14px; max-width: 480px; margin: 0 auto; padding-bottom: 60px; }
+  .stop { background: white; border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
+  .stop.done { opacity: 0.55; }
+  .stop.current { border-color: var(--amber); box-shadow: 0 0 0 3px rgba(244,180,0,0.18); }
+  .stop-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+  .seq { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; background:var(--line); font-size:12px; font-weight:700; margin-right:8px; }
+  .name { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 16px; }
+  .addr { color: var(--slate); font-size: 13px; margin: 2px 0 10px 30px; }
+  .badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.02em; }
+  .badge.pending { background: var(--line); color: var(--slate); }
+  .badge.awaiting, .badge.arrived { background: #FFF1CC; color: var(--amber2); }
+  .badge.delayed { background: #FBE4E1; color: var(--bad); }
+  .badge.picked_up { background: #DFF0E7; color: var(--good); }
+  .badge.no_show { background: #EDEDED; color: var(--slate); }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-left: 30px; }
+  button { border: none; border-radius: 10px; padding: 10px 14px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; }
+  .btn-arrived { background: var(--navy); color: white; }
+  .btn-awaiting { background: #FFF1CC; color: var(--amber2); }
+  .btn-delayed { background: #FBE4E1; color: var(--bad); }
+  .btn-picked { background: var(--amber); color: var(--navy); }
+  .btn-noshow { background: var(--line); color: var(--slate); }
+  .empty, .loading { text-align: center; color: var(--slate); padding: 60px 20px; }
+  .delay-form { margin-left: 30px; margin-top: 8px; display: none; gap: 8px; }
+  .delay-form.open { display: flex; }
+  .delay-form input { flex: 1; border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font-size: 13px; font-family: inherit; }
+</style>
+</head>
+<body>
+<header>
+  <div class="route" id="routeName">Loading…</div>
+  <div class="meta" id="tripMeta"></div>
+</header>
+<main id="stopList"><div class="loading">Loading your stops…</div></main>
+
+<script>
+const token = new URLSearchParams(window.location.search).get('token');
+const STATUS_LABEL = { pending: 'Not started', awaiting: 'Waiting', arrived: 'Arrived', delayed: 'Delayed', picked_up: 'Picked up', no_show: 'No show' };
+
+async function api(path, opts) {
+  const res = await fetch('/api/driver/' + token + path, {
+    method: opts?.method || 'GET',
+    headers: { 'Content-Type': 'application/json' },
+    body: opts?.body ? JSON.stringify(opts.body) : undefined
+  });
+  if (!res.ok) throw new Error((await res.json().catch(()=>({}))).error || 'Request failed');
+  return res.json();
+}
+
+function firstActiveIndex(stops) {
+  return stops.findIndex(s => ['pending','awaiting','arrived','delayed'].includes(s.status));
+}
+
+function render(data) {
+  if (!data) {
+    document.getElementById('stopList').innerHTML = '<div class="empty">This link isn\\'t valid. Ask the office to resend it.</div>';
+    return;
+  }
+  const { trip, route, stops } = data;
+  document.getElementById('routeName').textContent = route.name;
+  document.getElementById('tripMeta').textContent =
+    trip.service_date + ' · ' + (trip.leg === 'morning' ? 'Morning pickup' : 'Afternoon pickup') + ' · ' + trip.status.replace('_',' ');
+
+  const activeIdx = firstActiveIndex(stops);
+  const list = document.getElementById('stopList');
+  list.innerHTML = '';
+
+  if (stops.length === 0) {
+    list.innerHTML = '<div class="empty">No students booked on this run yet.</div>';
+    return;
+  }
+
+  stops.forEach((s, i) => {
+    const done = ['picked_up','no_show'].includes(s.status);
+    const isCurrent = i === activeIdx;
+    const div = document.createElement('div');
+    div.className = 'stop' + (done ? ' done' : '') + (isCurrent ? ' current' : '');
+    div.innerHTML = \`
+      <div class="stop-top">
+        <div><span class="seq">\${s.sequence}</span><span class="name">\${s.student_name}</span></div>
+        <span class="badge \${s.status}">\${STATUS_LABEL[s.status] || s.status}</span>
+      </div>
+      <div class="addr">\${s.pickup_address || ''}</div>
+      \${!done ? \`
+      <div class="actions">
+        <button class="btn-arrived" data-action="arrived" data-id="\${s.id}">Arrived</button>
+        <button class="btn-awaiting" data-action="awaiting" data-id="\${s.id}">Waiting</button>
+        <button class="btn-delayed" data-action="delay-toggle" data-id="\${s.id}">Delayed</button>
+        <button class="btn-picked" data-action="picked_up" data-id="\${s.id}">Picked up</button>
+        <button class="btn-noshow" data-action="no_show" data-id="\${s.id}">No show</button>
+      </div>
+      <div class="delay-form" id="delay-\${s.id}">
+        <input type="number" min="1" placeholder="Minutes" id="delay-mins-\${s.id}" />
+        <input type="text" placeholder="Reason (optional)" id="delay-reason-\${s.id}" />
+        <button class="btn-delayed" data-action="delay-submit" data-id="\${s.id}">Send</button>
+      </div>\` : ''}
+    \`;
+    list.appendChild(div);
+  });
+
+  list.querySelectorAll('button').forEach(btn => btn.addEventListener('click', onAction));
+}
+
+async function onAction(e) {
+  const action = e.target.dataset.action;
+  const id = e.target.dataset.id;
+
+  if (action === 'delay-toggle') {
+    document.getElementById('delay-' + id).classList.toggle('open');
+    return;
+  }
+  if (action === 'delay-submit') {
+    const mins = document.getElementById('delay-mins-' + id).value || 5;
+    const reason = document.getElementById('delay-reason-' + id).value;
+    const data = await api('/stops/' + id, { method: 'POST', body: { action: 'delayed', delay_minutes: Number(mins), reason } });
+    render(data);
+    return;
+  }
+  const data = await api('/stops/' + id, { method: 'POST', body: { action } });
+  render(data);
+}
+
+api('').then(render).catch(() => render(null));
+</script>
+</body>
+</html>
